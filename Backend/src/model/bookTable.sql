@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS books(
+    ID SERIAL PRIMARY KEY,
+    book_name VARCHAR(500) NOT NULL,
+    genre VARCHAR(100) NOT NULL,
+    writer VARCHAR(100) NOT NULL,
+    description TEXT,
+    cost NUMERIC NOT NULL,
+    stock INTEGER NOT NULL,
+    listed_on TIMESTAMPTZ DEFAULT NOW();
+);
