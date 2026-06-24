@@ -2,6 +2,7 @@
 import bcrypt from "bcrypt";
 
 import { findUserByEmail, createUser } from "../service/userService.js";
+import { sendToken } from "../util/sendToken.js";
 
 
 
@@ -33,8 +34,53 @@ export const register = async (req, res, next) => {
         const user = await createUser(name, email, hashPassword, mobile, address);
 
         res.send(user);
+        // res.redirect()
+
 
     }catch(err){
         next(err);
     };
 };
+
+// Login user controller
+
+export const login = async (req, res, next) => {
+    try{
+        const {email, password} = req.body
+
+        if(!email || !password){
+            return res.send("Please enter required details for login");
+        }
+
+        const user = await findUserByEmail(email);
+
+        if(!user){
+            return res.send("incorrect credentials");
+        }
+        else{
+            const isMatch = await bcrypt.compare(password, user.password);
+
+            if(isMatch){
+                sendToken(user, 200, "successfully logged In", res);
+            }
+            else{
+                return res.send("incorrect credentials");
+            }
+        }
+
+    }catch(err){
+        return next(err);
+    }
+}
+
+// Logout user Controller
+
+export const logout = async (req, res, next) => {
+    res.status(200).cookie("token", "", {
+        expires: new Date(Date.now()),
+        httpOnly: true
+    }).json({
+        success: true,
+        message: "Logged out successfully"
+    });
+}
