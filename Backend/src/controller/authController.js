@@ -1,7 +1,7 @@
 // Here controllers will be created for the routes.
 import bcrypt from "bcrypt";
 
-import { findUserByEmail, createUser } from "../service/userService.js";
+import { findUserByEmail, createUser, getAllUsers, updatePassword } from "../service/userService.js";
 import { sendToken } from "../util/sendToken.js";
 
 
@@ -83,4 +83,35 @@ export const logout = async (req, res, next) => {
         success: true,
         message: "Logged out successfully"
     });
+}
+
+export const forgotPassword = async (req, res, next) => {
+    const {email, password} = req.body;
+
+    // console.log("email: " + email);
+    // console.log("Password: "+password);
+
+    // Will check the user in Database if exist or not.
+    try{
+        const user = await findUserByEmail(email);
+
+        if(!user){
+            return res.send("User does not exist");
+        }
+        const userId = user.id;
+
+        if(password.length < 8 || password.length > 16){
+            return res.send("Length of password should be between 8 and 16 characters")
+        }
+
+        const newHashPassword = await bcrypt.hash(password, 10);
+
+        const userWithUpdatedPassword = await updatePassword(userId, newHashPassword);
+
+        res.send("Password changed successfully");
+        //redirect to login page.
+
+    }catch(err){
+        return next(err);
+    };
 }
