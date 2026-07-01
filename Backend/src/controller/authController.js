@@ -85,6 +85,8 @@ export const logout = async (req, res, next) => {
     });
 }
 
+// Forgot Password Controller
+
 export const forgotPassword = async (req, res, next) => {
     const {email, password} = req.body;
 
@@ -114,4 +116,34 @@ export const forgotPassword = async (req, res, next) => {
     }catch(err){
         return next(err);
     };
+}
+
+// Update New Password Controller
+
+export const updateNewPassword = async (req, res, next) => {
+    const userId = req.user.id;
+
+    const {oldPassword, newPassword} = req.body;
+
+    try{
+
+        const isMatched = await bcrypt.compare(oldPassword, req.user.password);
+
+        if(!isMatched){
+            return res.send("Old Password is incorrect");
+        }
+
+        if(newPassword.length < 8 || newPassword.length > 16){
+            return res.send("Length of password should be between 8 and 16 characters");
+        }
+
+        const newPasswordhash = await bcrypt.hash(newPassword, 10);
+
+        const userWithUpdatedPassword = await updatePassword(userId, newPasswordhash);
+
+        res.send("Password updated successfully");
+        
+    }catch(err){
+        return next(err);
+    }
 }
